@@ -49,7 +49,10 @@ async function draw() {
         .attr('data-temp',yAccessor)
          //Axes
     const xAxis = d3.axisBottom(xScale) //ritorna una funzione per disegnare un asse
-    const xAxisGroup = ctr.append('g') //L'asse sarà disegnato in un altro elemento <g>
+        .ticks(5)  //Impostiamo il numero di ticks visualizzate, d3 non segue esattamente il parametro passato, ma approssima.
+        //.tickValues([0.4,0.5,0.8]) //Indichiamo esplicitamente i ticks dell'asse orizzontale
+        .tickFormat((d)=> d*100 +'%') //Formattiamo i ticks in percentuale. d è il singolo valore del tick.
+        const xAxisGroup = ctr.append('g') //L'asse sarà disegnato in un altro elemento <g>
         .call(xAxis) //la funzione xAxis non può essere chiamata direttamente, serve chiamarla così
         .style('transform',`translateY(${dimensions.ctrHeight}px)`)
         .classed('axis',true) //Serve per dare una classe css all'elemento <g>
