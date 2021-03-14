@@ -20,6 +20,12 @@ async function draw(el,scale) {
       colorScale = d3.scaleLinear()
         .domain(d3.extent(dataset))
         .range(['white','red'])   //associa una scala di colori che va dal bianco al rosso, secondo i valori di input(domain)
+    }else if (scale ==='quantize') {
+      console.log("testquantize")
+        colorScale = d3.scaleQuantize()
+          .domain(d3.extent(dataset))
+          .range(['white','pink','red']) //divide inputDomain in 3 intervalli uguali e associa il risultato ad
+                                         //uno dei tre colori, secondo l'intervallo.
     }
 
     //Rectangles
@@ -39,3 +45,4 @@ async function draw(el,scale) {
     
 
 draw('#heatmap1','linear')
+draw('#heatmap2','quantize')
