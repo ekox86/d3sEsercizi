@@ -1,7 +1,7 @@
-async function draw(el) {
+async function draw(el,scale) {
   // Data
   const dataset = await d3.json('data.json')
-
+  dataset.sort((a,b)=>a-b) //ordina in modo ascendente i dati (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
   // Dimensions
   let dimensions = {
     width: 600,
@@ -14,11 +14,18 @@ async function draw(el) {
     .attr("width", dimensions.width)
     .attr("height", dimensions.height)
 
+    //Scales
+    let colorScale;
+    if (scale ==='linear'){
+      colorScale = d3.scaleLinear()
+        .domain(d3.extent(dataset))
+        .range(['white','red'])   //associa una scala di colori che va dal bianco al rosso, secondo i valori di input(domain)
+    }
+
     //Rectangles
     svg.append('g')
       .attr('transform','translate(2,2)') //sposta il group a destra e in basso di 2, per avere margine
       .attr('stroke','black') //questi attributi, applicati al gruppo, verranno ereditati dalle forme disegnate dentro.
-      .attr('fill',"#ddd")
       .selectAll('rect')
       .data(dataset) //prende i dati dal nostro dataset
       .join('rect')  //crea un elemento rect per ogni dato
@@ -27,7 +34,8 @@ async function draw(el) {
       .attr('x',(d,i)=> box * (i%20)) //d è il dato del dataset, i è l'indice dell'array
       //.attr('y',(d,i)=>box * ((i/20)| 0) //Il bitwise or converte il risultato della divisione in un intero (che porcata)
       .attr('y',(d,i)=>box * (Math.trunc(i/20))) //Fatto meglio
+      .attr('fill',(d) => colorScale(d)) //riempie i quadrati seguendo la scala di colori lineare che abbiamo definito prima.
     }
     
 
-draw('#heatmap1')
+draw('#heatmap1','linear')
