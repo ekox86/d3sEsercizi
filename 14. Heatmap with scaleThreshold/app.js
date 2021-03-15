@@ -24,12 +24,12 @@ async function draw(el,scale) {
         colorScale = d3.scaleQuantize()
           .domain(d3.extent(dataset))
           .range(['white','pink','red']) //divide inputDomain in 3 intervalli uguali e associa il risultato ad
-          console.log('Quantize:',colorScale.thresholds())                                 //uno dei tre colori, secondo l'intervallo.
+          console.log('Quantize:',colorScale.thresholds())  //stampa le soglie automaticamente calcolate da d3                                //uno dei tre colori, secondo l'intervallo.
     }else if (scale ==='quantile') {
         colorScale = d3.scaleQuantile()
           .domain(dataset) //invece di passare minimo e massimo,passiamo il dataset in modo che scalequantile possa calcolare i quantili
           .range(['white','pink','red']) //divide inputDomain in 3 intervalli con un numero uguale di campioni, e  per ognuno associa un colore
-          console.log('Quantize:',colorScale.quantiles())                                                   
+          console.log('Quantize:',colorScale.quantiles())  //stampa le soglie calcolate da d3                                             
     }else if (scale ==='threshold') {
       colorScale = d3.scaleThreshold()
         .domain([45200,135600]) //invece di passare minimo e massimo, passiamo l'array delle soglie che definiscono i 3 bucket
