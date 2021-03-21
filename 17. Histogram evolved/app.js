@@ -60,8 +60,8 @@ async function draw() {
       .selectAll('text')
       .data(newDataset)
       .join('text')
-      .attr('x', d=>xScale(d.x0)  + (xScale(d.x1)-xScale(d.x0))/2)
-      .attr('y',d=>yScale(yAccessor(d))-10)
+      .attr('x', d=>xScale(d.x0)  + (xScale(d.x1)-xScale(d.x0))/2)  //Formula necessaria per posizionare la label al centro sopra la colonna.
+      .attr('y',d=>yScale(yAccessor(d))-10)   //la posizione della label è appena sopra la colonna, cioè in yAccessor, dove la colonna comincia a essere disegnata
       .text(d=>d.length)
       //Draw Axis 
       const xAxis = d3.axisBottom(xScale)     //Crea la funzione che genera l'asse
