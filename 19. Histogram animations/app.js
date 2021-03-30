@@ -53,11 +53,13 @@ async function draw() {
     const exitTransition = d3.transition().duration(1000) //memorizziamo la transizione di uscita dei rettangoli per aspettare che essa sia terminata quando facciamo partire quella di 
                                            //ingresso degl altri rettangoli (quando si switcha la metrica.)
     const updateTransition = exitTransition.transition().duration(1000) //In questo modo updateTransition sarà eseguito dopo exitTransition perchè avrà un id più alto
+  
+    const labelTransition = updateTransition.transition().duration(1000)
+    
     //Draw bars
     const padding = 1 //distanza tra i rettangoli
     const temp = ctr.selectAll('rect')
       .data(newDataset)
-
       //per gestire le animazioni correttamente, bisogna fare override del comportamento della funzione di join, gestendo separatamente
       //la enter selection (ovvero gli elementi che verranno aggiunti all'svg)
       //la update selection (ovvero gli elementi che verranno aggiornati all'svg)
@@ -69,11 +71,12 @@ async function draw() {
           .attr('height',0) 
           .attr('x', d => xScale(d.x0))  
           .attr('y', dimensions.ctrHeight)
-          .attr('fill', '#01c5c4'),
+          .attr('fill', '#b8de6f'),   //ogni nuovo rettangolo aggiunto sarà verde
 
           (update) => update,
           //sulla selezione di uscita, cioè sui rettangoli che vengono rimossi, aggiungizmo una transizione per far vedere i rettangoli che si riducono prima di essere rimossi
           (exit) => exit.transition(exitTransition)
+            .attr('fill','#f39233') //ogni rettangolo che verrà rimosso diventerà arancione prima 
             .attr('y',dimensions.ctrHeight)
             .attr('height',0)
             .remove()
@@ -97,8 +100,15 @@ async function draw() {
     //Labels 
     labelsGroup.selectAll('text')     //crea gli elementi group per le label di ogni barra.
       .data(newDataset)
-      .join('text')
-      .transition()
+      .join(
+        (enter) => enter.append('text')
+        .attr('x',d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
+        .attr('y',d => dimensions.ctrHeight),
+        (update) => update.attr('x',d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
+        .attr('y',d => dimensions.ctrHeight),
+        (exit) => exit.remove()   
+      )
+      .transition(labelTransition)
       .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)  //Formula necessaria per posizionare la label al centro sopra la colonna.
       .attr('y', d => yScale(yAccessor(d)) - 10)   //la posizione della label è appena sopra la colonna, cioè in yAccessor, dove la colonna comincia a essere disegnata
       .text(d => d.length)
