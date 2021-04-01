@@ -106,7 +106,7 @@ async function draw() {
         .attr('y',dimensions.ctrHeight)
         .text(d => d.length),
         (update) => update,
-        (exit) => exit.transition(exitTransition)
+        (exit) => exit.transition(exitTransition) //la label si muoverà all'unisono con l'abbassamento delle barer
           .attr('y', dimensions.ctrHeight)
           .remove()
       )
