@@ -103,12 +103,14 @@ async function draw() {
       .join(
         (enter) => enter.append('text')
         .attr('x',d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
-        .attr('y',d => dimensions.ctrHeight),
-        (update) => update.attr('x',d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
-        .attr('y',d => dimensions.ctrHeight),
-        (exit) => exit.remove()   
+        .attr('y',dimensions.ctrHeight)
+        .text(d => d.length),
+        (update) => update,
+        (exit) => exit.transition(exitTransition)
+          .attr('y', dimensions.ctrHeight)
+          .remove()
       )
-      .transition(labelTransition)
+      .transition(updateTransition) // passando come parametro la stessa transizione usata per le barre, le label e le barre si muoveranno all'unisono.
       .attr('x', d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)  //Formula necessaria per posizionare la label al centro sopra la colonna.
       .attr('y', d => yScale(yAccessor(d)) - 10)   //la posizione della label è appena sopra la colonna, cioè in yAccessor, dove la colonna comincia a essere disegnata
       .text(d => d.length)
