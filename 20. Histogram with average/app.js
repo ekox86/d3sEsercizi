@@ -98,7 +98,7 @@ async function draw() {
     
     //AVERAGE VERTICAL LINE
     const mean = d3.mean(dataset, xAccessor)  //calcolo la media per la metrica selezionata
-    meanLine.raise() //raise serve a reinserire l'elemento in modo che appaia col primo zindex, altrimenti viene coperta dalle barre dell'istogramma
+    meanLine.raise() //raise serve a reinserire l'elemento in modo che sia l'ultimo elemento inserito, in modo da farla apparire sopra le barre, altrimenti viene coperta dalle barre dell'istogramma
         .transition(updateTransition)//la linea della media fara la transizione contemporaneamente a quella delle barre.
         .attr('x1', xScale(mean)) //posiziono la linea sulla coordinata x scalata corrispondente    al valore della media             
         .attr('y1', 0)                    
