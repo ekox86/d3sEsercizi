@@ -96,8 +96,8 @@ async function draw() {
         .selectAll('path')
         .data(dataset)
         .join('path')
-        //.attr('stroke','black')   //il diagramma non sarà disegnato in realtà.
-        .attr('fill','transparent')
+        //.attr('stroke','black')   //il path della partizione non sarà disegnato in realtà.
+        .attr('fill','transparent') //il contenuto del path sarà trasparente, altrimenti non si vedono i punti, ma solo tutte le forme delle partizioni.
         .attr('d',(d,i)=>voronoi.renderCell(i)) //questa funzione ritorna le coordinate del path necessario per renderizzare la cella del diagramma.
         //gli eventi di mouseenter e leave sono associati al passaggio sulla partizione e non più al passaggio sul punto.
         .on('mouseenter', function(event,datum) {  //non usiamo una arrow function perchè useremo la parola chiave this, che indicherà il cerchio sul quale stiamo passando il mouse sopra.
