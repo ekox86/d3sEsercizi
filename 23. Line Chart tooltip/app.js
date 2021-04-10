@@ -35,6 +35,7 @@ async function draw() {
       .attr('r',5)
       .attr('fill', '#fc8781')
       .attr('stroke-width',2)
+      .attr('stroke','black')
       .style('opacity',0)
       .style('pointer-events','none') //disattiviamo gli eventi sul punto
 
@@ -85,12 +86,51 @@ async function draw() {
       .attr('height',dimensions.ctrHeight)
       .style('opacity', 0)   // questo rettangolo sarà trasparente
       .on('touchmouse mousemove', function(event){
-        const mousePosition = d3.pointer(event, this)  //d3.pointer ritorna le coordinate correnti del mouse. 
-        console.log(mousePosition)                    //passando this d3.pointer calcola le coordinate del mouse in base al contenitore, non in assoluto.le coordinate sono relative al container.
+        const mousePos= d3.pointer(event, this)  //d3.pointer ritorna le coordinate correnti del mouse. 
+        //passando this d3.pointer calcola le coordinate del mouse in base al contenitore, non in assoluto.le coordinate sono relative al container.
+        
+        //dobbiamo ottenere la data a partire dalla coordinata x ottenuta leggendo la posizione del mouse nel container.
+        const date = xScale.invert(mousePos[0])  //la invert è una funzione che fa l'inverso della scala, in questo modo gli passiamo la x del mouse
+        //così otteniamo la data a partire dalla coordinata x.
+        //per ottenere la data più vicina nell'array a quella ottenuta dal mouse, usiamo 
+        //d3.bisect. La funzione però non confronta oggetti ma solo numeri, quindi dobbiamo creare una funzione apposita per prendere l'oggetto più vicino alla data che ci interessa
 
-      }) //individua se il mouse è sopra la linea o c'è movimento sul touchscreen, sulla linea      
-      .on('mouseleave') //individua quando il mouse lascia la linea. 
+        //Custom Bisector - left, center, right sono le tre prorietà dell'oggetto ritornato da d3.bisector
+        //left: indice più basso possibile 
+        //center: indice di mezzo
+        //right: indice più alto possibile
+        const bisector = d3.bisector(xAccessor).left //la funzione bisector permette di creare una funzione bisect customizzata per prendere l'oggetto che ci interessa
+        const index = bisector(dataset,date)   //adesso la funzione ritornerà l'indice dell'oggetto con data più vicina a quella passata come parametro. 
+        const stock = dataset[index -1]         //il dato che ci interessa in realtà è all'index - 1. 
 
+        //Mostra il pallino sulla linea, cambiandone l'opacità. Le sue coordinate sono le stesse del punto sulla linea. 
+        tooltipDot.style('opacity',1)
+          .attr('cx',xScale(xAccessor(stock)))
+          .attr('cy',yScale(yAccessor(stock)))
+          .raise()    //portiamo il punto in primo piano rispetto al resto. 
+
+        //Rendiamo visibile il tooltip cambiandone il css. Le coordinate sono le stesse del punto ma 20 px più in alto. 
+        tooltip.style('display','block')
+          .style('top', yScale(yAccessor(stock)) - 20 + "px")
+          .style('left', xScale(xAccessor(stock))+"px")
+
+        //Scriviamo il valore del prezzo (coordinata y) nel tooltip 
+        tooltip.select('.price')
+          .text(`$${yAccessor(stock)}`)
+        
+        //Scriviamo la data (coordinata x) nel tooltip 
+        const dateFormatter = d3.timeFormat('%B %-d, %Y')
+        tooltip.select('.date')
+          .text(`${dateFormatter(xAccessor(stock))}`)     
+      }) 
+      
+      //Quando il mouse è uscito dal grafico, facciamo sparire sia il pallino sulla linea che il tooltip. 
+      .on('mouseleave',function(event){
+        tooltipDot.style('opacity', 0)
+
+        tooltip.style('display','none')
+
+      }) 
 
   }
 draw()
