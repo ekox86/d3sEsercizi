@@ -56,9 +56,23 @@ async function draw() {
       .join('path')
       .attr('d',arc) //il valore generato dalla funzione arc è accettato dal path element per generare la fetta
       .attr('fill',d => colorScale(d.data.name)) //il colore della fetta sarà assegnato a partire dalla scala dei colori creata prima.
-  
-
-
+  //Labels
+  const labelsGroup = ctr.append('g') //il gruppo sarà al centro ma le label saranno posizionate relativamente al centro
+      .attr('transform',`translate(${dimensions.ctrHeight/2},${dimensions.ctrWidth/2})`)
+      .classed('labels',true)
+      
+      labelsGroup.selectAll('text')
+        .data(slices)
+        .join('text')
+        .attr('transform',(d) => `translate(${arc.centroid(d)})`) //il centroid ritorna le coordinate x, y del centro dell'arco, cioè a metà srada tra il centro e la circoferenza.
+        .call( text => text.append('tspan') 
+                        .style('font-weight','bold') 
+                        .text(d=>d.data.name)
+            )                 //la call permette di eseguire una funzione sulla selezione originale senza cambiare la selezione che viene ritornata.
+        .call( text => text.append('tspan') 
+                        .text(d=>d.data.value)
+        )
+        
     }
 
 draw()
