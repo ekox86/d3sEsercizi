@@ -5,7 +5,7 @@ async function draw() {
 
     return d
   })
-  console.log(dataset)
+  //console.log(dataset)
   // Dimensions
   let dimensions = {
     width: 1000,
@@ -29,6 +29,49 @@ async function draw() {
     )
 
   // Scales
-}
+  const stackGenerator = d3.stack() //la funzione stack generator organizza i dati in base a un array di chiavi passato come parametro
+      .keys(dataset.columns.slice(1))   //usiamo la slice function perchè dobbiamo escludere la prima colonna 
+  const stackData = stackGenerator(dataset) //generiamo i dati che saranno usati per disegnare lo stacked bar chart. Otterremo 9 array(uno per ogni colonna), ognuno dei quali conterrà 52 sottoarray
+                      .map((ageGroup) => {        //L'aggiunta di map permette di aggiungere il nome del gruppo di età
+                        ageGroup.forEach((state) => { // su ogni sottoarray da 52 elementi dei 9 ottenuti.
+                          state.key = ageGroup.key
+                        })
+                        return ageGroup
+                      })
+  //console.log(stackData)   //genera un'array con 9 elementi (uno per colonna),organizzato per rendere più facile la generazione del chart. 
+  const yScale = d3.scaleLinear()
+                      .domain([
+                        0, d3.max(stackData,(ageGroup) =>{
+                          return d3.max(ageGroup,(state) => state[1])  //cerchiamo l'array con valore superiore più alto.
+                        } )                      
+                      ])
+                      .rangeRound([dimensions.ctrHeight,dimensions.margins])     //Usiamo rangeround per arrotondare i valori in output dalla scala.
+                      
+  const xScale = d3.scaleBand() //la funzione bandScale converte dati discreti o categorie in numeri, ovvero dati continui. In pratica, se ho 7 categorie, bandScale ripartisce in maniera uniforme i 7 dati e aggiunge il padding necessario. 
+                      .domain(dataset.map((state)=>state.name)) //forniamo i nomi di tutti gli stati, usando il dataset originale. 
+                      .range([dimensions.margins, dimensions.ctrWidth])
 
+  const colorScale = d3.scaleOrdinal()    //creiamo una scala per i colori, per le associazioni ai vari gruppi. 
+                      .domain(stackData.map((ag)=>ag.key))
+                      .range(d3.schemeSpectral[stackData.length])
+                      .unknown('#ccc')  //Unknown viene usata quando schemespectral non sa come mappare il colore al valore.
+  //DRAW THE BARS
+  const ageGroups = ctr.append('g') //creiamo un gruppo apposta per le barre
+            .classed('age-groups',true)          
+            .selectAll('g')
+            .data(stackData)  //i dati questa volta sono annidati, dovremo prima associarli a un gruppo e poi fare il join vero e proprio con i rettangoli. 
+            .join('g') 
+            .attr('fill', d => colorScale(d.key))
+
+  ageGroups.selectAll('rect')   //per ogni gruppo aggiungiamo i rettangoli prendendoli dal dato (gruppo di età) associato al <g> corrispondente. 
+    .data((d) => d)
+    .join('rect')
+    .attr('x', d => xScale(d.data.name)) //la bandscale converte il nome dello stato nella coordinata corrispondente.
+    .attr('y', d => yScale (d[1]))    //prendiamo la posizione di fine perchè le y vanno dall'alto verso il basso.
+    .attr('width', xScale.bandwidth)    //la funzione bandwidth calcola automaticamente quanto ogni barra  
+    .attr('height', d =>yScale(d[0]) - yScale(d[1]) )  //facciamo il minore meno il maggiore sempre perchè le y crescono dall'alto verso il basso. 
+        
+
+  //ogni elemento di data ha un array di 2 posizioni con la posizione di inizio e la posizione di fine, in modo che sia semplice metterli uno sopra l'altro.
+}
 draw()
