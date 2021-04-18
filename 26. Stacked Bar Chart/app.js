@@ -56,12 +56,14 @@ async function draw() {
                       .range(d3.schemeSpectral[stackData.length])
                       .unknown('#ccc')  //Unknown viene usata quando schemespectral non sa come mappare il colore al valore.
   //DRAW THE BARS
-  const ageGroups = ctr.append('g') //creiamo un gruppo apposta per le barre
+  const ageGroups = ctr.append('g') //creiamo un gruppo per ogni gruppo d'età. Avremo quindi 9 gruppi, uno per ogni fascia d'età.
             .classed('age-groups',true)          
             .selectAll('g')
             .data(stackData)  //i dati questa volta sono annidati, dovremo prima associarli a un gruppo e poi fare il join vero e proprio con i rettangoli. 
             .join('g') 
-            .attr('fill', d => colorScale(d.key))
+            .attr('fill', d => colorScale(d.key)) 
+            //l'attributo fill sarà dato al gruppo, e tutti i rettangoli del gruppo di età corrispondente lo erediteranno.
+            //in questo modo, in ogni barra del grafico, i segmenti della stessa fascia d'età avranno lo stesso colore. 
 
   ageGroups.selectAll('rect')   //per ogni gruppo aggiungiamo i rettangoli prendendoli dal dato (gruppo di età) associato al <g> corrispondente. 
     .data((d) => d)
@@ -70,7 +72,19 @@ async function draw() {
     .attr('y', d => yScale (d[1]))    //prendiamo la posizione di fine perchè le y vanno dall'alto verso il basso.
     .attr('width', xScale.bandwidth)    //la funzione bandwidth calcola automaticamente quanto ogni barra  
     .attr('height', d =>yScale(d[0]) - yScale(d[1]) )  //facciamo il minore meno il maggiore sempre perchè le y crescono dall'alto verso il basso. 
-        
+  
+  //AXIS
+  const xAxis = d3.axisBottom(xScale)
+      .tickSizeOuter(0)  //Indico di non disegnare extra ticks agli estremi dell'asse.
+  const xAxisGroup = ctr.append('g')
+    .call(xAxis) 
+    .style('transform',`translateY(${dimensions.ctrHeight}px)`)
+  const yAxis = d3.axisLeft(yScale)
+                      .tickFormat(d3.format('~s'))  //formatto i valori grandi per scrivere k invece che 000 e M invece che 000000.
+  const yAxisGroup = ctr.append('g')
+      .call(yAxis)
+      .style('transform',`translateX(${dimensions.margins}px)`)
+
 
   //ogni elemento di data ha un array di 2 posizioni con la posizione di inizio e la posizione di fine, in modo che sia semplice metterli uno sopra l'altro.
 }
