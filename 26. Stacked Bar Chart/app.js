@@ -1,10 +1,12 @@
 async function draw() {
   // Data
-  const dataset = await d3.csv('data.csv',d => {
+  const dataset = await d3.csv('data.csv',(d,index,columns) => { //index è l'indice della riga, columns è la lista delle colonne
     d3.autoType(d)  //questa funzione individua automaticamente il tipo di dato. Non è sempre perfetta, da testare il dato ricavato
-
+    d.total = d3.sum(columns, (c) => d[c])  //in questo modo otteniamo per ogni riga il valore totale, sommando tutte le colonne
     return d
   })
+  dataset.sort((a,b) => b.total - a.total)  //ordiniamo i dati dal più grande al più piccolo
+
   //console.log(dataset)
   // Dimensions
   let dimensions = {
@@ -48,22 +50,24 @@ async function draw() {
                       .rangeRound([dimensions.ctrHeight,dimensions.margins])     //Usiamo rangeround per arrotondare i valori in output dalla scala.
                       
   const xScale = d3.scaleBand() //la funzione bandScale converte dati discreti o categorie in numeri, ovvero dati continui. In pratica, se ho 7 categorie, bandScale ripartisce in maniera uniforme i 7 dati e aggiunge il padding necessario. 
-                      .domain(dataset.map((state)=>state.name)) //forniamo i nomi di tutti gli stati, usando il dataset originale. 
-                      .range([dimensions.margins, dimensions.ctrWidth])
-
+      .domain(dataset.map((state)=>state.name)) //forniamo i nomi di tutti gli stati, usando il dataset originale. 
+      .range([dimensions.margins, dimensions.ctrWidth])
+      //.paddingInner(0.1)   //indica lo spazio da inserire tra una barra e l'altra. 0.1 corrisponde al 10% della larghezza
+      //.paddingOuter(0.1)   //indica lo spazio da inserire tra le barre estreme e il bordo del grafico.
+      .padding(0.1)       //fa la stessa cosa delle 2 funzioni commentate sopra.
   const colorScale = d3.scaleOrdinal()    //creiamo una scala per i colori, per le associazioni ai vari gruppi. 
-                      .domain(stackData.map((ag)=>ag.key))
-                      .range(d3.schemeSpectral[stackData.length])
-                      .unknown('#ccc')  //Unknown viene usata quando schemespectral non sa come mappare il colore al valore.
-  //DRAW THE BARS
+      .domain(stackData.map((ag)=>ag.key))
+      .range(d3.schemeSpectral[stackData.length])
+      .unknown('#ccc')  //Unknown viene usata quando schemespectral non sa come mappare il colore al valore.
+//DRAW THE BARS
   const ageGroups = ctr.append('g') //creiamo un gruppo per ogni gruppo d'età. Avremo quindi 9 gruppi, uno per ogni fascia d'età.
-            .classed('age-groups',true)          
-            .selectAll('g')
-            .data(stackData)  //i dati questa volta sono annidati, dovremo prima associarli a un gruppo e poi fare il join vero e proprio con i rettangoli. 
-            .join('g') 
-            .attr('fill', d => colorScale(d.key)) 
-            //l'attributo fill sarà dato al gruppo, e tutti i rettangoli del gruppo di età corrispondente lo erediteranno.
-            //in questo modo, in ogni barra del grafico, i segmenti della stessa fascia d'età avranno lo stesso colore. 
+      .classed('age-groups',true)          
+      .selectAll('g')
+      .data(stackData)  //i dati questa volta sono annidati, dovremo prima associarli a un gruppo e poi fare il join vero e proprio con i rettangoli. 
+      .join('g') 
+      .attr('fill', d => colorScale(d.key)) 
+      //l'attributo fill sarà dato al gruppo, e tutti i rettangoli del gruppo di età corrispondente lo erediteranno.
+      //in questo modo, in ogni barra del grafico, i segmenti della stessa fascia d'età avranno lo stesso colore. 
 
   ageGroups.selectAll('rect')   //per ogni gruppo aggiungiamo i rettangoli prendendoli dal dato (gruppo di età) associato al <g> corrispondente. 
     .data((d) => d)
@@ -80,7 +84,7 @@ async function draw() {
     .call(xAxis) 
     .style('transform',`translateY(${dimensions.ctrHeight}px)`)
   const yAxis = d3.axisLeft(yScale)
-                      .tickFormat(d3.format('~s'))  //formatto i valori grandi per scrivere k invece che 000 e M invece che 000000.
+      .tickFormat(d3.format('~s'))  //formatto i valori grandi per scrivere k invece che 000 e M invece che 000000.
   const yAxisGroup = ctr.append('g')
       .call(yAxis)
       .style('transform',`translateX(${dimensions.margins}px)`)
